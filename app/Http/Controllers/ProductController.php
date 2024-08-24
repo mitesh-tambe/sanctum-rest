@@ -43,6 +43,7 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
+        // dd(1);
         $details =[
             'name' => $request->name,
             'details' => $request->details
@@ -80,18 +81,23 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateProductRequest $request, Product $product)
+    public function update(UpdateProductRequest $request, $id)
     {
         $updateDetails =[
             'name' => $request->name,
             'details' => $request->details
         ];
+
         DB::beginTransaction();
         try{
-             $product = $this->productRepositoryInterface->update($updateDetails, $id);
+            $productUpdated = $this->productRepositoryInterface->update($updateDetails, $id);
 
-             DB::commit();
-             return ApiResponseClass::sendResponse('Product Update Successful','',201);
+            if ($productUpdated) {
+                DB::commit();
+                return ApiResponseClass::sendResponse('Product Update Successful', '', 201);
+            } else {
+                throw new \Exception('Product update failed.');
+            }
 
         }catch(\Exception $ex){
             return ApiResponseClass::rollback($ex);
